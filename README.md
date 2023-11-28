@@ -1,4 +1,4 @@
-# Recipe Keeper App 🍲📚
+# Web App 🍲📚
 Welcome to the Recipe Keeper Application! This web application allows you to manage and keep track of your favorite recipes. Whether you're a cooking enthusiast or just getting started, Recipe Keeper is here to help you organize your culinary adventures.
 
 ### Features
