@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Keeper App</title>
+    <style>
+        /* Style for the title outside the box */
+        header {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        /* Style for the button */
+        button {
+            background-color: #aed581;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        /* Hover effect for the button */
+        button:hover {
+            background-color: #9ccc65;
+        }
+
+        /* Style for the recipe display area */
+        .recipe-box {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        /* Style for each displayed recipe */
+        .recipe-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #ffffff;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Style for the box containing the form */
+        .recipe-box {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px;
+            background-color: #dcedc8;
+        }
+
+        /* Style for the form elements inside the box */
+        .recipe-box label,
+        .recipe-box input,
+        .recipe-box textarea,
+        .recipe-box button {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Style for the displayed recipe image */
+        .recipe-image {
+            max-width: 100%;
+            max-height: 200px; /* Adjust this value to your desired maximum height */
+            display: block;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Recipe Keeper</h1>
+    </header>
+
+    <div class="recipe-box">
+        <h2>Add Recipe</h2>
+        <form id="recipe-form">
+            <label for="recipe-name">Recipe Name</label>
+            <input type="text" id="recipe-name" name="recipe-name" required>
+
+            <label for="recipe-ingredients">Ingredients</label>
+            <textarea id="recipe-ingredients" name="recipe-ingredients" placeholder="List ingredients separated by commas" required></textarea>
+
+            <label for="recipe-steps">Steps for Preparation</label>
+            <textarea id="recipe-steps" name="recipe-steps" placeholder="Steps for preparation" required></textarea>
+
+            <label for="recipeImage">Recipe Image URL:</label>
+            <input type="url" id="recipeImage" name="recipeImage" placeholder="http://example.com/my-dish.jpg">
+
+            <button type="submit">Add Recipe</button>
+        </form>
+    </div>
+
+    <div class="recipe-box">
+        <h2>Your Recipes</h2>
+        <div id="recipes-list">
+            <!-- Recipes will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        const recipeForm = document.getElementById("recipe-form");
+        const recipeName = document.getElementById("recipe-name");
+        const recipeIngredients = document.getElementById('recipe-ingredients');
+        const recipeSteps = document.getElementById('recipe-steps');
+        const recipeImage = document.getElementById('recipeImage'); // Get the image input
+        const recipesList = document.getElementById('recipes-list');
+
+        // Function to save recipes to local storage
+        function saveRecipesToLocalstorage() {
+            localStorage.setItem('recipes', JSON.stringify(recipes));
+        }
+
+        // Create an array to store recipes
+        let recipes = [];
+        
+        // Load recipes from local storage if available
+        if (localStorage.getItem('recipes')) {
+            recipes = JSON.parse(localStorage.getItem('recipes'));
+            displayRecipes();
+        } else {
+            recipes = []; // If no recipes are found in local storage, start with an empty array
+        }
+
+        // Function to add a recipe to the recipes array
+        function addRecipe(name, ingredientList, stepList, imageUrl) {
+            recipes.push({
+                name: name,
+                ingredients: ingredientList,
+                steps: stepList,
+                imageUrl: imageUrl
+            });
+            saveRecipesToLocalstorage(); // Save recipes to local storage after adding
+        }
+
+        // Function to display recipes
+        function displayRecipes() {
+            recipesList.innerHTML = ''; // Clear the recipes list before displaying
+
+            recipes.forEach((recipe, index) => {
+                const recipeDiv = document.createElement('div');
+                recipeDiv.classList.add('recipe-item');
+
+                let recipeHTML = `
+                    <h3>${recipe.name}</h3>
+                    <p><strong>Ingredients:</strong> ${recipe.ingredients}</p>
+                    <p><strong>Steps:</strong> ${recipe.steps}</p>
+                `;
+
+                if (recipe.imageUrl) {
+                    recipeHTML += `<img src="${recipe.imageUrl}" alt="${recipe.name}" class="recipe-image">`;
+                }
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = "Delete";
+
+                deleteButton.onclick = function() {
+                    deleteRecipe(index);
+                };
+
+                recipeDiv.innerHTML = recipeHTML;
+                recipeDiv.appendChild(deleteButton);
+
+                recipesList.appendChild(recipeDiv);
+            });
+        }
+
+        // Function to delete recipes
+        function deleteRecipe(index) {
+            recipes.splice(index, 1); // Remove the recipe from the array
+            saveRecipesToLocalstorage(); // Save the updated recipes to local storage
+            displayRecipes(); // Refresh the display
+        }
+
+        // Event listener for form submission
+        recipeForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const enteredRecipeName = recipeName.value;
+            const enteredIngredients = recipeIngredients.value;
+            const enteredSteps = recipeSteps.value;
+            const enteredImageUrl = recipeImage.value; // Get the entered image URL
+
+            // Create a new recipe object
+            const newRecipe = {
+                name: enteredRecipeName,
+                ingredients: enteredIngredients,
+                steps: enteredSteps,
+                imageUrl: enteredImageUrl
+            };
+
+            // Add the new recipe to the recipes array
+            addRecipe(newRecipe.name, newRecipe.ingredients, newRecipe.steps, newRecipe.imageUrl);
+
+            // Clear the input fields
+            recipeName.value = '';
+            recipeIngredients.value = '';
+            recipeSteps.value = '';
+            recipeImage.value = '';
+
+            // Refresh the displayed recipes
+            displayRecipes();
+        });
+
+        // Display recipes initially when the page loads
+        displayRecipes();
+    </script>
+</body>
+</html>
+
+
